@@ -78,7 +78,6 @@ function pickOneLiner(verbose) {
 
 		quoteFound = true;
 		for (let [key, value] of numOfType) {
-			console.log(key, tweetJuice.match("#" + key).length, value);
 			if (tweetJuice.match("#" + key).length < value) {
 				quoteFound = false;
 				console.log("Rejected: ", line, ", missing ", value - tweetJuice.match("#" + key).length, " ", key, "s");
@@ -109,7 +108,10 @@ function generateOneLiner(verbose) {
 		}
 		usedWords.add(wordToUse.type + wordToUse.position);
 
-		quote[oneLiner.line.replacables[i].position] = tweetJuice.match("#" + oneLiner.line.replacables[i].type).eq(wordToUse.position).text();
+		//Check to see if the last character in the string is punctation, and retain it if it is
+		var punctuation = quote[oneLiner.line.replacables[i].position].charAt(quote[oneLiner.line.replacables[i].position].length - 1).match(/\W/);
+
+		quote[oneLiner.line.replacables[i].position] = tweetJuice.match("#" + oneLiner.line.replacables[i].type).eq(wordToUse.position).text() + ((punctuation != null) ? punctuation : "");
 	}
 
 	newTweetText = "";
@@ -148,8 +150,8 @@ function retweetLatest() {
 
 function testFunction() {
 	pickOneLiner(false);
+	console.log(quoteToText(oneLiner.game, oneLiner.line));
 	generateOneLiner(false);
-	console.log(oneLiner);
 	console.log(newTweetText);
 }
 

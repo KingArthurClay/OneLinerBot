@@ -7,7 +7,7 @@
 			"replacables": [
 				{"position": 1,
 				"type": "noun"},
-				{"position": 5,
+				{"position": 4,
 				"type": "noun"}
 			]},
 			{"quote": "Come get some!",
@@ -82,14 +82,14 @@
 				{"position": 7,
 				"type": "noun"}
 			]},
-			{"quote": "Hmm, that's one \"Doomed\" Space Marine",
+			{"quote": "Hmm, that's one \"Doomed\" Space Marine.",
 			"replacables": [
 				{"position": 4,
 				"type": "noun"},
 				{"position": 5,
 				"type": "noun"}
 			]},
-			{"quote": "Hmm, that's one \"Doomed\" Space Marine",
+			{"quote": "Hmm, that's one \"Doomed\" Space Marine.",
 			"replacables": [
 				{"position": 4,
 				"type": "adjective"},
@@ -112,7 +112,7 @@
 				{"position": 2,
 				"type": "noun"},
 				{"position": 6,
-				"type": "verbing"},
+				"type": "verb"},
 				{"position": 13,
 				"type": "adjective"}
 			]},
@@ -137,7 +137,7 @@
 				{"position": 5, 
 				"type": "noun"}
 			]},
-			{"quote": "I should have known those alien maggots booby-trapped this sub",
+			{"quote": "I should have known those alien maggots booby-trapped this sub.",
 			"replacables": [
 				{"position": 5,
 				"type": "adjective"},
@@ -157,9 +157,9 @@
 			]},
 			{"quote": "It's down to you and me, you one-eyed freak!",
 			"replacables": [
-				{"position": 8,
+				{"position": 7,
 				"type": "adjective"},
-				{"position": 9,
+				{"position": 8,
 				"type": "noun"}
 			]},
 			{"quote": "It's time to abort your whole freaking species!",
@@ -183,7 +183,7 @@
 				{"position": 4,
 				"type": "noun"}
 			]},
-			{"quote": "Mess with the best, you will die like the rest",
+			{"quote": "Mess with the best, you will die like the rest.",
 			"replacables": [
 				{"position": 0,
 				"type": "verb"},
@@ -229,7 +229,7 @@
 				{"position": 4,
 				"type": "noun"}
 			]},
-			{"quote": "A ninja knows no fear",
+			{"quote": "A ninja knows no fear.",
 			"replacables": [
 				{"position": 1,
 				"type": "noun"},
@@ -287,19 +287,19 @@
 				{"position": 14,
 				"type": "noun"}
 			]},
-			{"quote": "This promises to be fun",
+			{"quote": "This promises to be fun.",
 			"replacables": [
 				{"position": 4,
 				"type": "adjective"}
 			]},
-			{"quote": "Ughh, and I thought I was ugly",
+			{"quote": "Ughh, and I thought I was ugly.",
 			"replacables": [
 				{"position": 4,
 				"type": "noun"},
 				{"position": 6,
 				"type": "adjective"}
 			]},
-			{"quote": "I never said I was smart",
+			{"quote": "I never said I was smart.",
 			"replacables": [
 				{"position": 3,
 				"type": "noun"},
