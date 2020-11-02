@@ -17,16 +17,24 @@ var mediaArtsSearch = {q: "#mediaarts", count: 10, result_type: "recent"};
 //Original Tweet we're going to Quote Tweet;
 var ogTweet;
 
-//Tweet tweet we've decided to RT
+//Text of tweet we've decided to RT
 var tweetText = "Testy text to test with. Let the testing commence!";
+
+//New one-liner to RT;
+var newTweetText = "Error: No new one-liner created.";
+
+//The text of our tweet run through the compromise library
+var tweetJuice;
 
 //The selected one-liner
 var oneLiner = {};
 
+//Helper method for picking one liner
 function getRandomInt(max) {
 	return Math.floor(Math.random() * Math.floor(max));
 }
 
+//Helper method for debuging outputs and tracking previously attempted quotes
 function quoteToText(game, line) {
 	var replacables = " Replacables: ";
 	for (var i = 0; i < line.replacables.length; i++) {
@@ -35,10 +43,12 @@ function quoteToText(game, line) {
 	return "Game: " + game.game + " Character: " + game.character + " Quote: " + line.quote + replacables;
 }
 
-function pickOneLiner() {
-	console.log(oneLiners);
+function pickOneLiner(verbose) {
+	if (verbose) {
+		console.log("oneLiners: " + oneLiners);
+	}
 
-	var tweetJuice = nlp(tweetText);
+	tweetJuice = nlp(tweetText);
 
 	var attemptedQuotes = new Map();
 
@@ -46,14 +56,18 @@ function pickOneLiner() {
 	while (!quoteFound) {
 		//Keep track of all the quotes we've attempted to use, should stop this from looping infinitely;
 		var game = oneLiners.games[getRandomInt(Object.values(oneLiners).length)];
-		var line = game.quotes[getRandomInt(game.quotes.length)];
+		var line;
+		do {
+			line = game.quotes[getRandomInt(game.quotes.length)];
+		} while (attemptedQuotes.get(quoteToText(game, line)) == true);
 
-		console.log("Picked: ", quoteToText(game, line));
+		if (verbose) {
+			console.log("Picked: ", quoteToText(game, line));
+		}
 
 		attemptedQuotes.set(quoteToText(game, line), true);
 
 		var numOfType = new Map();
-		//TODO: Actual testing here
 		for (var i = 0; i < line.replacables.length; i++) {
 			if (numOfType.get(line.replacables[i].type) != undefined) {
 				numOfType.set(line.replacables[i].type, numOfType.get(line.replacables[i].type) + 1);
@@ -64,6 +78,7 @@ function pickOneLiner() {
 
 		quoteFound = true;
 		for (let [key, value] of numOfType) {
+			console.log(key, tweetJuice.match("#" + key).length, value);
 			if (tweetJuice.match("#" + key).length < value) {
 				quoteFound = false;
 				console.log("Rejected: ", line, ", missing ", value - tweetJuice.match("#" + key).length, " ", key, "s");
@@ -75,7 +90,33 @@ function pickOneLiner() {
 		oneLiner.line = line;
 	}
 
-	console.log("Used: ", quoteToText(game, line));
+	if (verbose) {
+		console.log("Used: ", quoteToText(oneLiner.game, oneLiner.line));
+	}
+}
+
+function generateOneLiner(verbose) {
+	var quote = oneLiner.line.quote.split(" ");
+	var usedWords = new Set();
+
+	for (var i = 0; i < oneLiner.line.replacables.length; i++) {
+		var wordToUse = {"type" : "#"+oneLiner.line.replacables[i].type, "position" : getRandomInt(tweetJuice.match("#" + oneLiner.line.replacables[i].type).length)};
+		while (usedWords.has(wordToUse.type + wordToUse.position)) {
+			if (verbose) {
+				console.log("Rejected word " + wordToUse.type + ", " + wordToUse.position);
+			}
+			wordToUse.position = getRandomInt(tweetJuice.match("#" + oneLiner.line.replacables[i].type).length);
+		}
+		usedWords.add(wordToUse.type + wordToUse.position);
+
+		quote[oneLiner.line.replacables[i].position] = tweetJuice.match("#" + oneLiner.line.replacables[i].type).eq(wordToUse.position).text();
+	}
+
+	newTweetText = "";
+	for (var i = 0; i < quote.length; i++) {
+		newTweetText += quote[i] + " ";
+	}
+	newTweetText += "- " + oneLiner.game.character + ", " + oneLiner.game.game;
 }
 
 // This function finds the latest tweet with the #mediaarts hashtag, and retweets it.
@@ -106,8 +147,10 @@ function retweetLatest() {
 }
 
 function testFunction() {
-	console.log("Test");
-	pickOneLiner();
+	pickOneLiner(false);
+	generateOneLiner(false);
+	console.log(oneLiner);
+	console.log(newTweetText);
 }
 
 // Run test function immediately, then end the program.
