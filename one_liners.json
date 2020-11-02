@@ -18,7 +18,7 @@
 			{"quote": "Damn... I'm looking good!",
 			"replacables": [
 				{"position": 3,
-				"type": "adjective"},
+				"type": "adjective"}
 			]},
 			{"quote": "Damn, those alien bastards are gonna pay for shooting up my ride.",
 			"replacables": [
