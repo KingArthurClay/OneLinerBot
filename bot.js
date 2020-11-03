@@ -11,8 +11,11 @@ var T = new Twit(require('./config.js'));
 //Include our file of one-liners
 var oneLiners = JSON.parse(fs.readFileSync('one_liners.json'));
 
-// This is the URL of a search for the latest tweets on the '#mediaarts' hashtag.
-var mediaArtsSearch = {q: "#mediaarts", count: 10, result_type: "recent"}; 
+//this is a user stream
+var stream = T.stream("user");
+
+//will turn on when someone tweets @MelMoenning
+stream.on('tweet', tweetToText);
 
 //Original Tweet we're going to Quote Tweet;
 var ogTweet;
@@ -34,6 +37,16 @@ function getRandomInt(max) {
 	return Math.floor(Math.random() * Math.floor(max));
 }
 
+// method to get tweet that @mentions MelMoenning.
+function tweetToText(eventMsg){
+	tweetText = eventMsg.T.text;
+	//to show us what is saved to tweetText.
+	console.log(tweetText);
+	
+	//write it to a file
+	//var json = JSON.stringify(eventMsg, null, 2);
+	//fs.writeFile(ogTweet.json, json);
+}
 //Helper method for debuging outputs and tracking previously attempted quotes
 function quoteToText(game, line) {
 	var replacables = " Replacables: ";
@@ -121,9 +134,9 @@ function generateOneLiner(verbose) {
 	newTweetText += "- " + oneLiner.game.character + ", " + oneLiner.game.game;
 }
 
-// This function finds the latest tweet with the #mediaarts hashtag, and retweets it.
+// This function finds the latest tweet where @MelMoenning account is mentioned, saves it as text. retweets it.
 function retweetLatest() {
-	T.get('search/tweets', mediaArtsSearch, function (error, data) {
+	T.get('search/tweets', mentionsAccount, function (error, data) {
 	  // log out any errors and responses
 	  console.log(error, data);
 	  // If our search request to the server had no errors...
@@ -131,7 +144,8 @@ function retweetLatest() {
 	  	// ...then we grab the ID of the tweet we want to retweet...
 		var retweetId = data.statuses[0].id_str;
 		// ...and then we tell Twitter we want to retweet it!
-		T.post('statuses/retweet/' + retweetId, { }, function (error, response) {
+		T(retweetId).text;
+		/* T.post('statuses/retweet/' + retweetId, { }, function (error, response) {
 			if (response) {
 				console.log('Success! Check your bot, it should have retweeted something.')
 			}
@@ -139,7 +153,7 @@ function retweetLatest() {
 			if (error) {
 				console.log('There was an error with Twitter:', error);
 			}
-		})
+		})*/
 	  }
 	  // However, if our original search request had an error, we want to print it out here.
 	  else {
