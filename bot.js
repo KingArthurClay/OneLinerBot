@@ -7,6 +7,9 @@ const nlp = require('compromise');
 
 const verbose = false;
 
+//Our total number of tweets, to duck twitter's api
+tweets = 0;
+
 // We need to include our configuration file
 var T = new Twit(require('./config.js'));
 
@@ -35,7 +38,7 @@ function getRandomInt(max) {
 
 // method to get tweet that @mentions MelMoenning.
 function tweetToText(eventMsg){
-	tweetText = eventMsg.T.text;
+	tweetText = eventMsg.text;
 	//to show us what is saved to tweetText.
 	console.log(tweetText);
 	
@@ -131,10 +134,19 @@ function generateOneLiner(verbose) {
 	newTweetText += "- " + oneLiner.game.character + ", " + oneLiner.game.game;
 }
 
-function replyToMention(eventMsg) {
+function retweetFamousPeople(eventMsg) {
 	tweetToText(eventMsg);
 	pickOneLiner(verbose);
 	generateOneLiner(verbose);
+	if (newTweetText.length <= 280) {
+		T.post("statuses/update", {"status" : newTweetText});
+		tweets++;
+	} else {
+		//Post two tweets
+		firstTweet = T.post("statuses/update", {"status" : newTweetText.split("-")[0]});
+		T.post("statuses/update", {"status" : "-" + newTweetText.split("-")[1], "in_reply_to_status_id": firstTweet.id});
+		tweets += 2;
+	}
 }
 
 // This function finds the latest tweet where @MelMoenning account is mentioned, saves it as text. retweets it.
@@ -148,7 +160,7 @@ function retweetLatest() {
 		var retweetId = data.statuses[0].id_str;
 		// ...and then we tell Twitter we want to retweet it!
 		T(retweetId).text;
-		/* T.post('statuses/retweet/' + retweetId, { }, function (error, response) {
+		T.post('statuses/retweet/' + retweetId, { }, function (error, response) {
 			if (response) {
 				console.log('Success! Check your bot, it should have retweeted something.')
 			}
@@ -156,7 +168,7 @@ function retweetLatest() {
 			if (error) {
 				console.log('There was an error with Twitter:', error);
 			}
-		})*/
+		})
 	  }
 	  // However, if our original search request had an error, we want to print it out here.
 	  else {
@@ -174,13 +186,18 @@ function testFunction() {
 
 //<---Begin Doing Stuff with Twitter-->
 
-T.post("statuses/update", {"status": "This is Call"});
+//This is a stream of tweets about a number of topics
+var famousStream = T.stream("statuses/filter", {"track" : "Trump, Biden, Kanye"});
+famousStream.on('tweet', retweetFamousPeople);
 
-//this is a user stream
-//var stream = T;
+if (tweets >= 300) {
+	famousStream.stop();
+	process.exit(0);
+}
 
 //will turn on when someone tweets @MelMoenning
-//stream.on('tweet', replyToMention);
+//var retweetStream = T.stream("statuses/filter", mentionsAccount);
+
 
 // ...and then every hour after that. Time here is in milliseconds, so
 // 1000 ms = 1 second, 1 sec * 60 = 1 min, 1 min * 60 = 1 hour --> 1000 * 60 * 60
