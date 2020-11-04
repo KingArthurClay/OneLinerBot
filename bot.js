@@ -1,21 +1,17 @@
 // Our Twitter library
-const Twit = require('twit');
+var Twit = require('twit');
 //file system library
 const fs = require('fs');
 //Language processing library
 const nlp = require('compromise');
+
+const verbose = false;
 
 // We need to include our configuration file
 var T = new Twit(require('./config.js'));
 
 //Include our file of one-liners
 var oneLiners = JSON.parse(fs.readFileSync('one_liners.json'));
-
-//this is a user stream
-var stream = T.stream("user");
-
-//will turn on when someone tweets @MelMoenning
-stream.on('tweet', tweetToText);
 
 //Original Tweet we're going to Quote Tweet;
 var ogTweet;
@@ -47,6 +43,7 @@ function tweetToText(eventMsg){
 	//var json = JSON.stringify(eventMsg, null, 2);
 	//fs.writeFile(ogTweet.json, json);
 }
+
 //Helper method for debuging outputs and tracking previously attempted quotes
 function quoteToText(game, line) {
 	var replacables = " Replacables: ";
@@ -134,6 +131,12 @@ function generateOneLiner(verbose) {
 	newTweetText += "- " + oneLiner.game.character + ", " + oneLiner.game.game;
 }
 
+function replyToMention(eventMsg) {
+	tweetToText(eventMsg);
+	pickOneLiner(verbose);
+	generateOneLiner(verbose);
+}
+
 // This function finds the latest tweet where @MelMoenning account is mentioned, saves it as text. retweets it.
 function retweetLatest() {
 	T.get('search/tweets', mentionsAccount, function (error, data) {
@@ -169,8 +172,16 @@ function testFunction() {
 	console.log(newTweetText);
 }
 
-// Run test function immediately, then end the program.
-testFunction();
+//<---Begin Doing Stuff with Twitter-->
+
+T.post("statuses/update", {"status": "This is Call"});
+
+//this is a user stream
+//var stream = T;
+
+//will turn on when someone tweets @MelMoenning
+//stream.on('tweet', replyToMention);
+
 // ...and then every hour after that. Time here is in milliseconds, so
 // 1000 ms = 1 second, 1 sec * 60 = 1 min, 1 min * 60 = 1 hour --> 1000 * 60 * 60
 //setInterval(retweetLatest, 1000 * 60 * 60);
