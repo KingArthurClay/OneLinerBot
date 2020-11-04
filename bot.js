@@ -152,6 +152,8 @@ function retweetPeople() {
 //will turn on when someone tweets @MelMoenning
 //var retweetStream = T.stream("statuses/filter", mentionsAccount);
 
+retweetPeople();
+
 //...and then every hour after that. Time here is in milliseconds, so
 //1000 ms = 1 second, 1 sec * 60 = 1 min, 1 min * 60 = 1 hour --> 1000 * 60 * 60
-setInterval(retweetPeople, 1000 * 60 * 60);
+setInterval(retweetPeople, 1000 * 60 * 10);
