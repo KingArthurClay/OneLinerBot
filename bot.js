@@ -1,18 +1,20 @@
 // Our Twitter library
-const Twit = require('twit');
+var Twit = require('twit');
 //file system library
 const fs = require('fs');
 //Language processing library
 const nlp = require('compromise');
+
+const verbose = false;
+
+//Our total number of tweets, to duck twitter's api
+tweets = 0;
 
 // We need to include our configuration file
 var T = new Twit(require('./config.js'));
 
 //Include our file of one-liners
 var oneLiners = JSON.parse(fs.readFileSync('one_liners.json'));
-
-// This is the URL of a search for the latest tweets on the '#mediaarts' hashtag.
-var mediaArtsSearch = {q: "#mediaarts", count: 10, result_type: "recent"}; 
 
 //Original Tweet we're going to Quote Tweet;
 var ogTweet;
@@ -32,6 +34,17 @@ var oneLiner = {};
 //Helper method for picking one liner
 function getRandomInt(max) {
 	return Math.floor(Math.random() * Math.floor(max));
+}
+
+// method to get tweet that @mentions MelMoenning.
+function tweetToText(eventMsg){
+	tweetText = eventMsg.text;
+	//to show us what is saved to tweetText.
+	console.log(tweetText);
+	
+	//write it to a file
+	//var json = JSON.stringify(eventMsg, null, 2);
+	//fs.writeFile(ogTweet.json, json);
 }
 
 //Helper method for debuging outputs and tracking previously attempted quotes
@@ -121,9 +134,24 @@ function generateOneLiner(verbose) {
 	newTweetText += "- " + oneLiner.game.character + ", " + oneLiner.game.game;
 }
 
-// This function finds the latest tweet with the #mediaarts hashtag, and retweets it.
+function retweetFamousPeople(eventMsg) {
+	tweetToText(eventMsg);
+	pickOneLiner(verbose);
+	generateOneLiner(verbose);
+	if (newTweetText.length <= 280) {
+		T.post("statuses/update", {"status" : newTweetText});
+		tweets++;
+	} else {
+		//Post two tweets
+		firstTweet = T.post("statuses/update", {"status" : newTweetText.split("-")[0]});
+		T.post("statuses/update", {"status" : "-" + newTweetText.split("-")[1], "in_reply_to_status_id": firstTweet.id});
+		tweets += 2;
+	}
+}
+
+// This function finds the latest tweet where @MelMoenning account is mentioned, saves it as text. retweets it.
 function retweetLatest() {
-	T.get('search/tweets', mediaArtsSearch, function (error, data) {
+	T.get('search/tweets', mentionsAccount, function (error, data) {
 	  // log out any errors and responses
 	  console.log(error, data);
 	  // If our search request to the server had no errors...
@@ -131,6 +159,7 @@ function retweetLatest() {
 	  	// ...then we grab the ID of the tweet we want to retweet...
 		var retweetId = data.statuses[0].id_str;
 		// ...and then we tell Twitter we want to retweet it!
+		T(retweetId).text;
 		T.post('statuses/retweet/' + retweetId, { }, function (error, response) {
 			if (response) {
 				console.log('Success! Check your bot, it should have retweeted something.')
@@ -155,8 +184,21 @@ function testFunction() {
 	console.log(newTweetText);
 }
 
-// Run test function immediately, then end the program.
-testFunction();
+//<---Begin Doing Stuff with Twitter-->
+
+//This is a stream of tweets about a number of topics
+var famousStream = T.stream("statuses/filter", {"track" : "Trump, Biden, Kanye"});
+famousStream.on('tweet', retweetFamousPeople);
+
+if (tweets >= 300) {
+	famousStream.stop();
+	process.exit(0);
+}
+
+//will turn on when someone tweets @MelMoenning
+//var retweetStream = T.stream("statuses/filter", mentionsAccount);
+
+
 // ...and then every hour after that. Time here is in milliseconds, so
 // 1000 ms = 1 second, 1 sec * 60 = 1 min, 1 min * 60 = 1 hour --> 1000 * 60 * 60
 //setInterval(retweetLatest, 1000 * 60 * 60);
